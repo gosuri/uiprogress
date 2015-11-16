@@ -10,21 +10,33 @@ import (
 )
 
 var (
-	Writer = os.Stdout
+	Out             = os.Stdout
+	DefaultProgress = New()
+	RefreshInterval = time.Millisecond
 )
 
 type Progress struct {
-	Writer io.Writer
-	Width  int
-	Bars   []*Bar
+	Out             io.Writer
+	Width           int
+	Bars            []*Bar
+	RefreshInterval time.Duration
 }
 
 func New() *Progress {
 	return &Progress{
-		Width:  100,
-		Writer: Writer,
-		Bars:   make([]*Bar, 0),
+		Width:           Width,
+		Out:             Out,
+		Bars:            make([]*Bar, 0),
+		RefreshInterval: RefreshInterval,
 	}
+}
+
+func AddBar(total int) *Bar {
+	return DefaultProgress.AddBar(total)
+}
+
+func Start() {
+	DefaultProgress.Start()
 }
 
 func (p *Progress) AddBar(total int) *Bar {
@@ -36,14 +48,15 @@ func (p *Progress) AddBar(total int) *Bar {
 
 func (p *Progress) Start() {
 	lw := uilive.New()
-	lw.Out = p.Writer
+	lw.Out = p.Out
+	lw.RefreshInterval = p.RefreshInterval
 	go func() {
 		for {
 			for _, bar := range p.Bars {
 				fmt.Fprintln(lw, bar.String())
 			}
-			time.Sleep(time.Millisecond * 10)
 			lw.Flush()
+			lw.Wait()
 		}
 	}()
 }
