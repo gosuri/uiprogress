@@ -105,3 +105,7 @@ This will produce
 ```sh
 $ go get -v github.com/gosuri/uiprogress
 ```
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/gosuri/uiprogress/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
