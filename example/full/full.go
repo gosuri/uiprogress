@@ -26,23 +26,25 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go app("app1", &wg)
+	go deploy("app1", &wg)
 	wg.Add(1)
-	go app("app2", &wg)
+	go deploy("app2", &wg)
 	wg.Wait()
 
 	fmt.Println("apps: successfully deployed: app1, app2")
 }
 
-func app(name string, wg *sync.WaitGroup) {
+func deploy(app string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	bar := uiprogress.AddBar(len(steps)).
+	bar := uiprogress.
+		AddBar(len(steps)).
 		AppendCompleted().
 		PrependElapsed()
 	bar.Width = 50
 
+	// prepend the deploy step to the bar
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
-		return strutil.Resize(name+": "+steps[b.Current()-1], 22)
+		return strutil.Resize(app+": "+steps[b.Current()-1], 22)
 	})
 
 	rand.Seed(500)

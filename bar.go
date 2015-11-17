@@ -10,12 +10,23 @@ import (
 )
 
 var (
-	Fill     byte = '='
-	Head     byte = '>'
-	Empty    byte = '-'
-	LeftEnd  byte = '['
+	// Fill is the default character representing completed progress
+	Fill byte = '='
+
+	// Head is the default character that moves when progress is updated
+	Head byte = '>'
+
+	// Empty is the default character that represents the empty progress
+	Empty byte = '-'
+
+	// LeftEnd is the default character in the left most part of the progress indicator
+	LeftEnd byte = '['
+
+	// RightEnd is the default character in the right most part of the progress indicator
 	RightEnd byte = ']'
-	Width         = 70
+
+	// Width is the default width of the progress bar
+	Width = 70
 )
 
 // Bar represents a progress bar

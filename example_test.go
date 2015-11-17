@@ -1,6 +1,7 @@
 package uiprogress_test
 
 import (
+	"sync"
 	"time"
 
 	"github.com/gosuri/uiprogress"
@@ -29,6 +30,7 @@ func ExampleProgress_AddBar() {
 
 	bar1 := uiprogress.AddBar(20).AppendCompleted().PrependElapsed()
 	wg.Add(1)
+	// update the progress bars concurrently using a go routine
 	go func() {
 		defer wg.Done()
 		for i := 1; i <= bar1.Total; i++ {
@@ -58,16 +60,17 @@ func ExampleProgress_AddBar() {
 		}
 	}()
 
+	// wait for a collection of goroutines to finish
 	wg.Wait()
 }
 
 func ExampleDecoratorFunc() {
 	var steps = []string{"downloading source", "installing deps", "compiling", "packaging", "seeding database", "deploying", "staring servers"}
 	bar := uiprogress.AddBar(len(steps))
-	bar.Width = 50
 
+	// prepend the current step to the bar
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
-		return strutil.Resize("app: "+steps[b.Current()-1], 22)
+		return "app: " + steps[b.Current()-1]
 	})
 
 	for i := 0; i < bar.Total; i++ {

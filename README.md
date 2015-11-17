@@ -1,8 +1,10 @@
-# uiprogress
+# uiprogress [![GoDoc](https://godoc.org/github.com/gosuri/uiprogress?status.svg)](https://godoc.org/github.com/gosuri/uiprogress) [![Build Status](https://travis-ci.org/gosuri/uiprogress.svg?branch=master)](https://travis-ci.org/gosuri/uiprogress)
 
 A Go library to render progress bars in terminal applications. It provides a set of powerful features that are customizable using a simple interface.
 
 ![example](doc/example_full.gif)
+
+Progress bars improve readability for terminal applications with long outputs by providing a concise feedback loop.
 
 ## Features
 
@@ -27,7 +29,8 @@ for i := 1; i <= bar.Total; i++ {
   time.Sleep(time.Millisecond * 10)
 }
 ```
-This will render the below in the terminal.
+
+This will render the below in the terminal
 
 ![example](doc/example_simple.gif)
 
@@ -38,10 +41,9 @@ You can also add a custom decorator function in addition to default `bar.AppendC
 ```go
 var steps = []string{"downloading source", "installing deps", "compiling", "packaging", "seeding database", "deploying", "staring servers"}
 bar := uiprogress.AddBar(len(steps))
-bar.Width = 50
-
+// prepend the current step to the bar
 bar.PrependFunc(func(b *uiprogress.Bar) string {
-  return strutil.Resize("app: "+steps[b.Current()-1], 22)
+  return "app: " + steps[b.Current()-1]
 })
 
 for i := 0; i < bar.Total; i++ {
@@ -93,11 +95,13 @@ go func() {
 // wait for a collection of goroutines to finish
 wg.Wait()
 ```
-This will produce:
+
+This will produce
+
 ![example](doc/example_multi.gif)
 
 ## Installation
 
 ```sh
-go get -v github.com/gosuri/uiprogress
+$ go get -v github.com/gosuri/uiprogress
 ```
