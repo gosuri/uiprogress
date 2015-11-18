@@ -107,11 +107,9 @@ $ go get -v github.com/gosuri/uiprogress
 ```
 ## Todos
 
-[ ] Autodetect and resize based on window's dimensions
+- [ ] Resize bars and decorators by auto detecting window's dimensions
+- [ ] Handle more progress bars than vertical screen allows
 
 ## License
 
 uiprogress is released under the MIT License. See [LICENSE](https://github.com/gosuri/uiprogress/blob/master/LICENSE).
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/gosuri/uiprogress/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
