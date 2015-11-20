@@ -17,6 +17,6 @@ func main() {
 
 	for i := 1; i <= bar.Total; i++ {
 		bar.Set(i)
-		time.Sleep(time.Millisecond * 10)
+		time.Sleep(time.Millisecond * 100)
 	}
 }

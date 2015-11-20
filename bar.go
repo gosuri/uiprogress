@@ -3,7 +3,6 @@ package uiprogress
 import (
 	"bytes"
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/gosuri/uiprogress/util/strutil"
@@ -198,17 +197,5 @@ func (b *Bar) TimeElapsed() time.Duration {
 
 // TimeElapsedString returns the formatted string represenation of the time elapsed
 func (b *Bar) TimeElapsedString() string {
-	return prettyTime(b.TimeElapsed())
-}
-
-func prettyTime(t time.Duration) string {
-	re, err := regexp.Compile(`(\d+).(\d+)(\w+)`)
-	if err != nil {
-		return err.Error()
-	}
-	parts := re.FindSubmatch([]byte(t.String()))
-	if len(parts) != 4 {
-		return "---"
-	}
-	return string(parts[1]) + string(parts[3])
+	return strutil.PrettyTime(b.TimeElapsed())
 }

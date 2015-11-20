@@ -2,6 +2,7 @@ package strutil
 
 import (
 	"testing"
+	"time"
 )
 
 func TestResize(t *testing.T) {
@@ -29,5 +30,13 @@ func TestPadLeft(t *testing.T) {
 	got := PadLeft("foo", 5, '-')
 	if got != "--foo" {
 		t.Fatal("want", "--foo", "got", got)
+	}
+}
+
+func TestPrettyTime(t *testing.T) {
+	d, _ := time.ParseDuration("")
+	got := PrettyTime(d)
+	if got != "---" {
+		t.Fatal("want", "---", "got", got)
 	}
 }
