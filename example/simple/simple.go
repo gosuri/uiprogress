@@ -16,7 +16,7 @@ func main() {
 	bar.PrependElapsed()
 
 	for i := 1; i <= bar.Total; i++ {
-		bar.Set(i)
+		bar.Incr()
 		time.Sleep(time.Millisecond * 100)
 	}
 }

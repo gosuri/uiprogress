@@ -2,6 +2,7 @@ package uiprogress
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"time"
 
@@ -26,6 +27,9 @@ var (
 
 	// Width is the default width of the progress bar
 	Width = 70
+
+	// ErrMaxCurrentReached is error when trying to set current value that exceeds the total value
+	ErrMaxCurrentReached = errors.New("errors: current value is greater total value")
 )
 
 // Bar represents a progress bar
@@ -78,14 +82,23 @@ func NewBar(total int) *Bar {
 	}
 }
 
-// Sets the current count of the bar
-func (b *Bar) Set(n int) *Bar {
+// Sets the current count of the bar.  It returns ErrMaxCurrentReached when trying n exceeds the total value.
+func (b *Bar) Set(n int) error {
+	if n > b.Total {
+		return ErrMaxCurrentReached
+	}
+
 	if b.current == 0 {
 		b.TimeStarted = time.Now()
 	}
 	b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
-	return b
+	return nil
+}
+
+// Incr increments the current value by 1. It returns ErrMaxCurrentReached when trying current value exceeds the total value
+func (b *Bar) Incr() error {
+	return b.Set(b.current + 1)
 }
 
 // Current returns the current progress of the bar
