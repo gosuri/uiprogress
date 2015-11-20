@@ -48,8 +48,7 @@ func deploy(app string, wg *sync.WaitGroup) {
 	})
 
 	rand.Seed(500)
-	for i := 0; i < bar.Total; i++ {
-		bar.Set(i + 1)
+	for bar.Incr() {
 		time.Sleep(time.Millisecond * time.Duration(rand.Intn(2000)))
 	}
 }

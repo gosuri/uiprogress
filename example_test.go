@@ -8,43 +8,38 @@ import (
 )
 
 func Example() {
-	uiprogress.Start() // start rendering
-
+	uiprogress.Start()            // start rendering
 	bar := uiprogress.AddBar(100) // Add a new bar
 
 	// optionally, append and prepend completion and elapsed time
 	bar.AppendCompleted()
 	bar.PrependElapsed()
 
-	for i := 1; i <= bar.Total; i++ {
-		bar.Set(i)
-		time.Sleep(time.Millisecond * 10)
+	for bar.Incr() {
+		time.Sleep(time.Millisecond * 20)
 	}
 }
 
 func ExampleProgress_AddBar() {
 	waitTime := time.Millisecond * 100
 	uiprogress.Start()
-
+	// start the progress bars in go routines
 	var wg sync.WaitGroup
 
 	bar1 := uiprogress.AddBar(20).AppendCompleted().PrependElapsed()
 	wg.Add(1)
-	// update the progress bars concurrently using a go routine
 	go func() {
 		defer wg.Done()
-		for i := 1; i <= bar1.Total; i++ {
-			bar1.Set(i)
+		for bar1.Incr() {
 			time.Sleep(waitTime)
 		}
 	}()
 
-	bar2 := uiprogress.AddBar(100).AppendCompleted().PrependElapsed()
+	bar2 := uiprogress.AddBar(40).AppendCompleted().PrependElapsed()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for i := 1; i <= bar2.Total; i++ {
-			bar2.Set(i)
+		for bar2.Incr() {
 			time.Sleep(waitTime)
 		}
 	}()
@@ -59,8 +54,7 @@ func ExampleProgress_AddBar() {
 			time.Sleep(waitTime)
 		}
 	}()
-
-	// wait for a collection of goroutines to finish
+	// wait for all the go routines to finish
 	wg.Wait()
 }
 
@@ -73,8 +67,7 @@ func ExampleDecoratorFunc() {
 		return "app: " + steps[b.Current()-1]
 	})
 
-	for i := 0; i < bar.Total; i++ {
-		bar.Set(i + 1)
-		time.Sleep(time.Millisecond * 100)
+	for bar.Incr() {
+		time.Sleep(time.Millisecond)
 	}
 }

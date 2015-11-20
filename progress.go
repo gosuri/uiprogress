@@ -31,6 +31,10 @@ type Progress struct {
 
 	// RefreshInterval in the time duration to wait for refreshing the output
 	RefreshInterval time.Duration
+
+	lw *uilive.Writer
+
+	stopChan chan struct{}
 }
 
 // New returns a new progress bar with defaults
@@ -40,6 +44,9 @@ func New() *Progress {
 		Out:             Out,
 		Bars:            make([]*Bar, 0),
 		RefreshInterval: RefreshInterval,
+
+		lw:       uilive.New(),
+		stopChan: make(chan struct{}),
 	}
 }
 
@@ -53,6 +60,16 @@ func Start() {
 	DefaultProgress.Start()
 }
 
+// Stop stops listening
+func Stop() {
+	DefaultProgress.Stop()
+}
+
+// Listen listens for updates and renders the progress bars
+func Listen() {
+	DefaultProgress.Listen()
+}
+
 // AddBar creates a new progress bar and adds to the container
 func (p *Progress) AddBar(total int) *Bar {
 	bar := NewBar(total)
@@ -61,18 +78,27 @@ func (p *Progress) AddBar(total int) *Bar {
 	return bar
 }
 
-// Start starts the rendering the progress of progress bars. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
-func (p *Progress) Start() {
-	lw := uilive.New()
-	lw.Out = p.Out
-	lw.RefreshInterval = p.RefreshInterval
+// Listen listens for updates and renders the progress bars
+func (p *Progress) Listen() {
+	p.lw.Out = p.Out
 	go func() {
 		for {
 			for _, bar := range p.Bars {
-				fmt.Fprintln(lw, bar.String())
+				fmt.Fprintln(p.lw, bar.String())
 			}
-			lw.Flush()
-			lw.Wait()
+			p.lw.Flush()
+			time.Sleep(p.RefreshInterval)
 		}
 	}()
+	<-p.stopChan
+}
+
+// Start starts the rendering the progress of progress bars. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
+func (p *Progress) Start() {
+	go p.Listen()
+}
+
+// Stop stops listening
+func (p *Progress) Stop() {
+	p.stopChan <- struct{}{}
 }

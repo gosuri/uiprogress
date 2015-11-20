@@ -96,9 +96,12 @@ func (b *Bar) Set(n int) error {
 	return nil
 }
 
-// Incr increments the current value by 1. It returns ErrMaxCurrentReached when trying current value exceeds the total value
-func (b *Bar) Incr() error {
-	return b.Set(b.current + 1)
+// Incr increments the current value by 1 and returns true. It returns false if the cursor has reached or exceeds total value
+func (b *Bar) Incr() bool {
+	if err := b.Set(b.current + 1); err == ErrMaxCurrentReached {
+		return false
+	}
+	return true
 }
 
 // Current returns the current progress of the bar

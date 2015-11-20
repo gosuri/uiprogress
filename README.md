@@ -15,18 +15,18 @@ Progress bars improve readability for terminal applications with long outputs by
 
 ## Usage
 
-To start listening for progress bars, call `uiprogress.Start()` and add a progress bar using `uiprogress.AddBar(total)`. Update the progress using `bar.Set(n)`. Full source code for the below example is available at [example/simple/simple.go](example/simple/simple.go) 
+To start listening for progress bars, call `uiprogress.Start()` and add a progress bar using `uiprogress.AddBar(total int)`. Update the progress using `bar.Incr()` or `bar.Set(n int)`. Full source code for the below example is available at [example/simple/simple.go](example/simple/simple.go) 
 
 ```go
-uiprogress.Start() // start rendering
+uiprogress.Start()            // start rendering
 bar := uiprogress.AddBar(100) // Add a new bar
+
 // optionally, append and prepend completion and elapsed time
 bar.AppendCompleted()
 bar.PrependElapsed()
 
-for i := 1; i <= bar.Total; i++ {
-  bar.Set(i)
-  time.Sleep(time.Millisecond * 10)
+for bar.Incr() {
+  time.Sleep(time.Millisecond * 20)
 }
 ```
 
@@ -41,14 +41,14 @@ You can also add a custom decorator function in addition to default `bar.AppendC
 ```go
 var steps = []string{"downloading source", "installing deps", "compiling", "packaging", "seeding database", "deploying", "staring servers"}
 bar := uiprogress.AddBar(len(steps))
+
 // prepend the current step to the bar
 bar.PrependFunc(func(b *uiprogress.Bar) string {
   return "app: " + steps[b.Current()-1]
 })
 
-for i := 0; i < bar.Total; i++ {
-  bar.Set(i + 1)
-  time.Sleep(time.Millisecond * 100)
+for bar.Incr() {
+  time.Sleep(time.Millisecond * 10)
 }
 ```
 
@@ -59,30 +59,29 @@ You can add multiple bars using `uiprogress.AddBar(n)`. The below example demons
 ```go
 waitTime := time.Millisecond * 100
 uiprogress.Start()
+
+// start the progress bars in go routines
 var wg sync.WaitGroup
 
-// update the progress bars concurrently using a go routine
 bar1 := uiprogress.AddBar(20).AppendCompleted().PrependElapsed()
 wg.Add(1)
 go func() {
   defer wg.Done()
-  for i := 1; i <= bar1.Total; i++ {
-    bar1.Set(i)
+  for bar1.Incr() {
     time.Sleep(waitTime)
   }
 }()
 
-bar2 := uiprogress.AddBar(100).AppendCompleted().PrependElapsed()
+bar2 := uiprogress.AddBar(40).AppendCompleted().PrependElapsed()
 wg.Add(1)
 go func() {
   defer wg.Done()
-  for i := 1; i <= bar2.Total; i++ {
-    bar2.Set(i)
+  for bar2.Incr() {
     time.Sleep(waitTime)
   }
 }()
 
-time.Sleep(time.Second) // some logic
+time.Sleep(time.Second)
 bar3 := uiprogress.AddBar(20).PrependElapsed().AppendCompleted()
 wg.Add(1)
 go func() {
@@ -92,7 +91,8 @@ go func() {
     time.Sleep(waitTime)
   }
 }()
-// wait for a collection of goroutines to finish
+
+// wait for all the go routines to finish
 wg.Wait()
 ```
 
