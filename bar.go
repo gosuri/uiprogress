@@ -105,7 +105,8 @@ func (b *Bar) Incr() bool {
 	if n > b.Total {
 		return false
 	}
-	if b.current == 0 {
+	var t time.Time
+	if b.TimeStarted == t {
 		b.TimeStarted = time.Now()
 	}
 	b.timeElapsed = time.Since(b.TimeStarted)
