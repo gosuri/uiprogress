@@ -100,9 +100,9 @@ This will produce
 
 ![example](doc/example_multi.gif)
 
-### Using the `Incr` counter
+### The `Bar.Incr()` counter
 
-[Bar.Incr](https://godoc.org/github.com/gosuri/uiprogress#Bar.Incr) is an atomic counter and can be used as a general tracker, making it ideal for tracking of progress of work fanned out to a lot of go routines. The source code for the below example is available at [example/incr/incr.go](example/incr/incr.go)
+[Bar.Incr()](https://godoc.org/github.com/gosuri/uiprogress#Bar.Incr) is an atomic counter and can be used as a general tracker, making it ideal for tracking progress of work fanned out to a lots of go routines. The source code for the below example is available at [example/incr/incr.go](example/incr/incr.go)
 
 ```go
 runtime.GOMAXPROCS(runtime.NumCPU()) // use all available cpu cores

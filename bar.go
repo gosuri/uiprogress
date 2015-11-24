@@ -62,7 +62,7 @@ type Bar struct {
 	// timeElased is the time elapsed for the progress
 	timeElapsed time.Duration
 	current     int
-	mtx         sync.Mutex
+	mtx         sync.RWMutex
 
 	appendFuncs  []DecoratorFunc
 	prependFuncs []DecoratorFunc
@@ -84,7 +84,7 @@ func NewBar(total int) *Bar {
 	}
 }
 
-// Sets the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is non atomic operation and not threadsafe.
+// Sets the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is non atomic operation and not concurancy safe.
 func (b *Bar) Set(n int) error {
 	if n > b.Total {
 		return ErrMaxCurrentReached
@@ -98,7 +98,7 @@ func (b *Bar) Set(n int) error {
 	return nil
 }
 
-// Incr increments the current value by 1 and returns true. It returns false if the cursor has reached or exceeds total value. This is automic operation and threadsafe.
+// Incr increments the current value by 1 and returns true. It returns false if the cursor has reached or exceeds total value. This is atomic operation and concurancy safe.
 func (b *Bar) Incr() bool {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
