@@ -1,6 +1,6 @@
 # uiprogress [![GoDoc](https://godoc.org/github.com/gosuri/uiprogress?status.svg)](https://godoc.org/github.com/gosuri/uiprogress) [![Build Status](https://travis-ci.org/gosuri/uiprogress.svg?branch=master)](https://travis-ci.org/gosuri/uiprogress)
 
-A Go library to render progress bars in terminal applications. It provides a set of powerful features that are customizable using a simple interface.
+A Go library to render progress bars in terminal applications. It provides a set of flexible features with a customizable API.
 
 ![example](doc/example_full.gif)
 
@@ -100,31 +100,33 @@ This will produce
 
 ![example](doc/example_multi.gif)
 
-### The `Bar.Incr()` counter
+### `Incr` counter
 
 [Bar.Incr()](https://godoc.org/github.com/gosuri/uiprogress#Bar.Incr) is an atomic counter and can be used as a general tracker, making it ideal for tracking progress of work fanned out to a lots of go routines. The source code for the below example is available at [example/incr/incr.go](example/incr/incr.go)
 
 ```go
 runtime.GOMAXPROCS(runtime.NumCPU()) // use all available cpu cores
-count := 1000                        // number of items
 
-// create a new bar and prepend the task progress to the bar
-bar := uiprogress.AddBar(count)
+// create a new bar and prepend the task progress to the bar and fanout into 1k go routines
+count := 1000
+bar := uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
 bar.PrependFunc(func(b *uiprogress.Bar) string {
   return fmt.Sprintf("Task (%d/%d)", b.Current(), count)
 })
 
 uiprogress.Start()
 var wg sync.WaitGroup
-// fanout into 1k go routines
+
+// fanout into go routines
 for i := 0; i < count; i++ {
   wg.Add(1)
   go func() {
     defer wg.Done()
+    time.Sleep(time.Millisecond * time.Duration(rand.Intn(500)))
     bar.Incr()
-    time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
   }()
 }
+time.Sleep(time.Second) // wait for a second for all the go routines to finish
 wg.Wait()
 uiprogress.Stop()
 ```

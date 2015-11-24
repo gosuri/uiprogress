@@ -84,32 +84,39 @@ func NewBar(total int) *Bar {
 	}
 }
 
-// Sets the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is non atomic operation and not concurancy safe.
+// Sets the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is atomic operation and concurancy safe.
 func (b *Bar) Set(n int) error {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	if n > b.Total {
 		return ErrMaxCurrentReached
 	}
+	b.current = n
+	return nil
+}
 
+// Incr increments the current value by 1, time elapsed to current time and returns true. It returns false if the cursor has reached or exceeds total value.
+func (b *Bar) Incr() bool {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
+	n := b.current + 1
+	if n > b.Total {
+		return false
+	}
 	if b.current == 0 {
 		b.TimeStarted = time.Now()
 	}
 	b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
-	return nil
-}
-
-// Incr increments the current value by 1 and returns true. It returns false if the cursor has reached or exceeds total value. This is atomic operation and concurancy safe.
-func (b *Bar) Incr() bool {
-	b.mtx.Lock()
-	defer b.mtx.Unlock()
-	if err := b.Set(b.current + 1); err == ErrMaxCurrentReached {
-		return false
-	}
 	return true
 }
 
 // Current returns the current progress of the bar
 func (b *Bar) Current() int {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	return b.current
 }
 
@@ -202,6 +209,8 @@ func (b *Bar) String() string {
 
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	return (float64(b.current) / float64(b.Total)) * 100.00
 }
 
@@ -212,6 +221,8 @@ func (b *Bar) CompletedPercentString() string {
 
 // TimeElapsed returns the time elapsed
 func (b *Bar) TimeElapsed() time.Duration {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	return b.timeElapsed
 }
 

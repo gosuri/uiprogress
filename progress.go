@@ -15,7 +15,7 @@ var (
 	// DefaultProgress is the default progress
 	DefaultProgress = New()
 	// RefreshInterval in the default time duration to wait for refreshing the output
-	RefreshInterval = time.Millisecond
+	RefreshInterval = time.Millisecond * 10
 )
 
 // Progress represents the container that renders progress bars
@@ -83,14 +83,16 @@ func (p *Progress) Listen() {
 	p.lw.Out = p.Out
 	go func() {
 		for {
+			time.Sleep(p.RefreshInterval)
 			for _, bar := range p.Bars {
 				fmt.Fprintln(p.lw, bar.String())
 			}
 			p.lw.Flush()
-			time.Sleep(p.RefreshInterval)
 		}
 	}()
 	<-p.stopChan
+	time.Sleep(p.RefreshInterval)
+	p.lw.Flush()
 }
 
 // Start starts the rendering the progress of progress bars. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`

@@ -11,25 +11,28 @@ import (
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU()) // use all available cpu cores
+
+	// create a new bar and prepend the task progress to the bar and fanout into 1k go routines
 	count := 1000
 	bar := uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
-	// prepend the task progress to the bar
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
 		return fmt.Sprintf("Task (%d/%d)", b.Current(), count)
 	})
 
 	uiprogress.Start()
 	var wg sync.WaitGroup
-	// Fanout into 1k go routines
+
+	// fanout into 1k go routines
 	for i := 0; i < count; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(500)))
 			bar.Incr()
-			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
 		}()
 	}
+	time.Sleep(time.Second) // wait for a second for all the go routines to finish
 	wg.Wait()
 	uiprogress.Stop()
 }

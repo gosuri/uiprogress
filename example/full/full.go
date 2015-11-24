@@ -36,10 +36,7 @@ func main() {
 
 func deploy(app string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	bar := uiprogress.
-		AddBar(len(steps)).
-		AppendCompleted().
-		PrependElapsed()
+	bar := uiprogress.AddBar(len(steps)).AppendCompleted().PrependElapsed()
 	bar.Width = 50
 
 	// prepend the deploy step to the bar

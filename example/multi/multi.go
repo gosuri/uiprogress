@@ -36,8 +36,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for i := 1; i <= bar3.Total; i++ {
-			bar3.Set(i)
+		for bar3.Incr() {
 			time.Sleep(waitTime)
 		}
 	}()
