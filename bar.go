@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gosuri/uiprogress/util/strutil"
@@ -61,6 +62,7 @@ type Bar struct {
 	// timeElased is the time elapsed for the progress
 	timeElapsed time.Duration
 	current     int
+	mtx         sync.Mutex
 
 	appendFuncs  []DecoratorFunc
 	prependFuncs []DecoratorFunc
@@ -82,7 +84,7 @@ func NewBar(total int) *Bar {
 	}
 }
 
-// Sets the current count of the bar.  It returns ErrMaxCurrentReached when trying n exceeds the total value.
+// Sets the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is non atomic operation and not threadsafe.
 func (b *Bar) Set(n int) error {
 	if n > b.Total {
 		return ErrMaxCurrentReached
@@ -96,8 +98,10 @@ func (b *Bar) Set(n int) error {
 	return nil
 }
 
-// Incr increments the current value by 1 and returns true. It returns false if the cursor has reached or exceeds total value
+// Incr increments the current value by 1 and returns true. It returns false if the cursor has reached or exceeds total value. This is automic operation and threadsafe.
 func (b *Bar) Incr() bool {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
 	if err := b.Set(b.current + 1); err == ErrMaxCurrentReached {
 		return false
 	}
