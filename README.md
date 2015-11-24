@@ -100,6 +100,35 @@ This will produce
 
 ![example](doc/example_multi.gif)
 
+### Using the `Incr` counter
+
+[Bar.Incr](https://godoc.org/github.com/gosuri/uiprogress#Bar.Incr) is an atomic counter and can be used as a general tracker, making it ideal for tracking of progress of work fanned out to a lot of go routines. The source code for the below example is available at [example/incr/incr.go](example/incr/incr.go)
+
+```go
+runtime.GOMAXPROCS(runtime.NumCPU()) // use all available cpu cores
+count := 1000                        // number of items
+
+// create a new bar and prepend the task progress to the bar
+bar := uiprogress.AddBar(count)
+bar.PrependFunc(func(b *uiprogress.Bar) string {
+  return fmt.Sprintf("Task (%d/%d)", b.Current(), count)
+})
+
+uiprogress.Start()
+var wg sync.WaitGroup
+// fanout into 1k go routines
+for i := 0; i < count; i++ {
+  wg.Add(1)
+  go func() {
+    defer wg.Done()
+    bar.Incr()
+    time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+  }()
+}
+wg.Wait()
+uiprogress.Stop()
+```
+
 ## Installation
 
 ```sh

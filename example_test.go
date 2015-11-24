@@ -1,6 +1,9 @@
 package uiprogress_test
 
 import (
+	"fmt"
+	"math/rand"
+	"runtime"
 	"sync"
 	"time"
 
@@ -70,4 +73,29 @@ func ExampleDecoratorFunc() {
 	for bar.Incr() {
 		time.Sleep(time.Millisecond)
 	}
+}
+
+func ExampleBar_Incr() {
+	runtime.GOMAXPROCS(runtime.NumCPU()) // use all available cpu cores
+	count := 1000                        // number of items
+
+	// create a new bar and prepend the task progress to the bar
+	bar := uiprogress.AddBar(count)
+	bar.PrependFunc(func(b *uiprogress.Bar) string {
+		return fmt.Sprintf("Task (%d/%d)", b.Current(), count)
+	})
+
+	uiprogress.Start()
+	var wg sync.WaitGroup
+	// fanout into 1k go routines
+	for i := 0; i < count; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			bar.Incr()
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+		}()
+	}
+	wg.Wait()
+	uiprogress.Stop()
 }
