@@ -123,6 +123,8 @@ func (b *Bar) Current() int {
 
 // AppendFunc appends a decorator function that will be rendered on before the progress bar
 func (b *Bar) AppendFunc(f DecoratorFunc) *Bar {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
 	b.appendFuncs = append(b.appendFuncs, f)
 	return b
 }
@@ -145,6 +147,8 @@ func (b *Bar) AppendElapsed() *Bar {
 
 // PrependFunc appends a decorator function that will be rendered on after the progress bar
 func (b *Bar) PrependFunc(f DecoratorFunc) *Bar {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
 	b.prependFuncs = append(b.prependFuncs, f)
 	return b
 }
@@ -210,9 +214,7 @@ func (b *Bar) String() string {
 
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
-	b.mtx.RLock()
-	defer b.mtx.RUnlock()
-	return (float64(b.current) / float64(b.Total)) * 100.00
+	return (float64(b.Current()) / float64(b.Total)) * 100.00
 }
 
 // CompletedPercentString returns the formatted string representation of the completed percent
