@@ -1,4 +1,4 @@
 test:
-	go test ./... -race
+	go test ./...
 
 .PHONY:test
