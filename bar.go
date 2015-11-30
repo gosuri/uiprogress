@@ -121,7 +121,7 @@ func (b *Bar) Current() int {
 	return b.current
 }
 
-// AppendFunc appends a decorator function that will be rendered on before the progress bar
+// AppendFunc runs the decorator function and renders the output on the right of the progress bar
 func (b *Bar) AppendFunc(f DecoratorFunc) *Bar {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
@@ -129,7 +129,7 @@ func (b *Bar) AppendFunc(f DecoratorFunc) *Bar {
 	return b
 }
 
-// AppendCompleted will append completion percent to the progress bar
+// AppendCompleted appends the completion percent to the progress bar
 func (b *Bar) AppendCompleted() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		return b.CompletedPercentString()
@@ -137,7 +137,7 @@ func (b *Bar) AppendCompleted() *Bar {
 	return b
 }
 
-// AppendElapsed with append the time elapsed the be progress bar
+// AppendElapsed appends the time elapsed the be progress bar
 func (b *Bar) AppendElapsed() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		return strutil.PadLeft(b.TimeElapsedString(), 5, ' ')
@@ -145,7 +145,7 @@ func (b *Bar) AppendElapsed() *Bar {
 	return b
 }
 
-// PrependFunc appends a decorator function that will be rendered on after the progress bar
+// PrependFunc runs decorator function and render the output left the progress bar
 func (b *Bar) PrependFunc(f DecoratorFunc) *Bar {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
@@ -171,8 +171,7 @@ func (b *Bar) PrependElapsed() *Bar {
 
 // Bytes returns the byte presentation of the progress bar
 func (b *Bar) Bytes() []byte {
-	completedWidthF := float64(b.Width) * (b.CompletedPercent() / 100.00)
-	completedWidth := int(completedWidthF)
+	completedWidth := int(float64(b.Width) * (b.CompletedPercent() / 100.00))
 
 	// add fill and empty bits
 	var buf bytes.Buffer
@@ -195,12 +194,16 @@ func (b *Bar) Bytes() []byte {
 	// render append functions to the right of the bar
 	for _, f := range b.appendFuncs {
 		pb = append(pb, ' ')
+		b.mtx.RLock()
 		pb = append(pb, []byte(f(b))...)
+		b.mtx.RUnlock()
 	}
 
 	// render prepend functions to the left of the bar
 	for _, f := range b.prependFuncs {
+		b.mtx.RLock()
 		args := []byte(f(b))
+		b.mtx.RUnlock()
 		args = append(args, ' ')
 		pb = append(args, pb...)
 	}
