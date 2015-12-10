@@ -81,18 +81,23 @@ func (p *Progress) AddBar(total int) *Bar {
 // Listen listens for updates and renders the progress bars
 func (p *Progress) Listen() {
 	p.lw.Out = p.Out
-	go func() {
-		for {
-			time.Sleep(p.RefreshInterval)
-			for _, bar := range p.Bars {
-				fmt.Fprintln(p.lw, bar.String())
+	for {
+		select {
+		case <-p.stopChan:
+			{
+				return
 			}
-			p.lw.Flush()
+		default:
+			{
+				time.Sleep(p.RefreshInterval)
+				for _, bar := range p.Bars {
+					fmt.Fprintln(p.lw, bar.String())
+				}
+				p.lw.Flush()
+			}
 		}
-	}()
-	<-p.stopChan
-	time.Sleep(p.RefreshInterval)
-	p.lw.Flush()
+
+	}
 }
 
 // Start starts the rendering the progress of progress bars. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
@@ -102,5 +107,5 @@ func (p *Progress) Start() {
 
 // Stop stops listening
 func (p *Progress) Stop() {
-	p.stopChan <- struct{}{}
+	close(p.stopChan)
 }
