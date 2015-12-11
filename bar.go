@@ -116,8 +116,6 @@ func (b *Bar) Incr() bool {
 
 // Current returns the current progress of the bar
 func (b *Bar) Current() int {
-	b.mtx.RLock()
-	defer b.mtx.RUnlock()
 	return b.current
 }
 
@@ -194,16 +192,12 @@ func (b *Bar) Bytes() []byte {
 	// render append functions to the right of the bar
 	for _, f := range b.appendFuncs {
 		pb = append(pb, ' ')
-		b.mtx.RLock()
 		pb = append(pb, []byte(f(b))...)
-		b.mtx.RUnlock()
 	}
 
 	// render prepend functions to the left of the bar
 	for _, f := range b.prependFuncs {
-		b.mtx.RLock()
 		args := []byte(f(b))
-		b.mtx.RUnlock()
 		args = append(args, ' ')
 		pb = append(args, pb...)
 	}
