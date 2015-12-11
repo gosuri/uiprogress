@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gosuri/uilive"
@@ -35,6 +36,7 @@ type Progress struct {
 	lw *uilive.Writer
 
 	stopChan chan struct{}
+	mtx      *sync.RWMutex
 }
 
 // New returns a new progress bar with defaults
@@ -47,6 +49,7 @@ func New() *Progress {
 
 		lw:       uilive.New(),
 		stopChan: make(chan struct{}),
+		mtx:      &sync.RWMutex{},
 	}
 }
 
@@ -72,6 +75,9 @@ func Listen() {
 
 // AddBar creates a new progress bar and adds to the container
 func (p *Progress) AddBar(total int) *Bar {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
 	bar := NewBar(total)
 	bar.Width = p.Width
 	p.Bars = append(p.Bars, bar)
@@ -90,13 +96,14 @@ func (p *Progress) Listen() {
 		default:
 			{
 				time.Sleep(p.RefreshInterval)
+				p.mtx.RLock()
 				for _, bar := range p.Bars {
 					fmt.Fprintln(p.lw, bar.String())
 				}
 				p.lw.Flush()
+				p.mtx.RUnlock()
 			}
 		}
-
 	}
 }
 

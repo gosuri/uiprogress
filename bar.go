@@ -62,7 +62,8 @@ type Bar struct {
 	// timeElased is the time elapsed for the progress
 	timeElapsed time.Duration
 	current     int
-	mtx         sync.RWMutex
+
+	mtx *sync.RWMutex
 
 	appendFuncs  []DecoratorFunc
 	prependFuncs []DecoratorFunc
@@ -81,6 +82,8 @@ func NewBar(total int) *Bar {
 		Head:     Head,
 		Fill:     Fill,
 		Empty:    Empty,
+
+		mtx: &sync.RWMutex{},
 	}
 }
 
@@ -116,6 +119,8 @@ func (b *Bar) Incr() bool {
 
 // Current returns the current progress of the bar
 func (b *Bar) Current() int {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
 	return b.current
 }
 
