@@ -109,10 +109,14 @@ func (p *Progress) Listen() {
 
 // Start starts the rendering the progress of progress bars. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
 func (p *Progress) Start() {
+	if p.stopChan == nil {
+		p.stopChan = make(chan struct{})
+	}
 	go p.Listen()
 }
 
 // Stop stops listening
 func (p *Progress) Stop() {
 	close(p.stopChan)
+	p.stopChan = nil
 }
