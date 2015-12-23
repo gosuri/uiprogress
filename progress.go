@@ -10,14 +10,14 @@ import (
 	"github.com/gosuri/uilive"
 )
 
-var (
-	// Out is the default writer to render progress bars to
-	Out = os.Stdout
-	// DefaultProgress is the default progress
-	DefaultProgress = New()
-	// RefreshInterval in the default time duration to wait for refreshing the output
-	RefreshInterval = time.Millisecond * 10
-)
+// Out is the default writer to render progress bars to
+var Out = os.Stdout
+
+// RefreshInterval in the default time duration to wait for refreshing the output
+var RefreshInterval = time.Millisecond * 10
+
+// defaultProgress is the default progress
+var defaultProgress = New()
 
 // Progress represents the container that renders progress bars
 type Progress struct {
@@ -33,8 +33,7 @@ type Progress struct {
 	// RefreshInterval in the time duration to wait for refreshing the output
 	RefreshInterval time.Duration
 
-	lw *uilive.Writer
-
+	lw       *uilive.Writer
 	stopChan chan struct{}
 	mtx      *sync.RWMutex
 }
@@ -55,22 +54,22 @@ func New() *Progress {
 
 // AddBar creates a new progress bar and adds it to the default progress container
 func AddBar(total int) *Bar {
-	return DefaultProgress.AddBar(total)
+	return defaultProgress.AddBar(total)
 }
 
 // Start starts the rendering the progress of progress bars using the DefaultProgress. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
 func Start() {
-	DefaultProgress.Start()
+	defaultProgress.Start()
 }
 
 // Stop stops listening
 func Stop() {
-	DefaultProgress.Stop()
+	defaultProgress.Stop()
 }
 
 // Listen listens for updates and renders the progress bars
 func Listen() {
-	DefaultProgress.Listen()
+	defaultProgress.Listen()
 }
 
 // AddBar creates a new progress bar and adds to the container
@@ -90,19 +89,15 @@ func (p *Progress) Listen() {
 	for {
 		select {
 		case <-p.stopChan:
-			{
-				return
-			}
+			return
 		default:
-			{
-				time.Sleep(p.RefreshInterval)
-				p.mtx.RLock()
-				for _, bar := range p.Bars {
-					fmt.Fprintln(p.lw, bar.String())
-				}
-				p.lw.Flush()
-				p.mtx.RUnlock()
+			time.Sleep(p.RefreshInterval)
+			p.mtx.RLock()
+			for _, bar := range p.Bars {
+				fmt.Fprintln(p.lw, bar.String())
 			}
+			p.lw.Flush()
+			p.mtx.RUnlock()
 		}
 	}
 }
