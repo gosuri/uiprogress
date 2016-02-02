@@ -115,3 +115,8 @@ func (p *Progress) Stop() {
 	close(p.stopChan)
 	p.stopChan = nil
 }
+
+// Bypass returns a writer which allows non-buffered data to be written to the underlying output
+func (p *Progress) Bypass() io.Writer {
+	return p.lw.Bypass()
+}
