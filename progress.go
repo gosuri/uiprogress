@@ -33,9 +33,9 @@ type Progress struct {
 	// RefreshInterval in the time duration to wait for refreshing the output
 	RefreshInterval time.Duration
 
-	lw       *uilive.Writer
-	stopChan chan struct{}
-	mtx      *sync.RWMutex
+	lw     *uilive.Writer
+	ticker *time.Ticker
+	mtx    *sync.RWMutex
 }
 
 // New returns a new progress bar with defaults
@@ -46,9 +46,8 @@ func New() *Progress {
 		Bars:            make([]*Bar, 0),
 		RefreshInterval: RefreshInterval,
 
-		lw:       uilive.New(),
-		stopChan: make(chan struct{}),
-		mtx:      &sync.RWMutex{},
+		lw:  uilive.New(),
+		mtx: &sync.RWMutex{},
 	}
 }
 
@@ -86,34 +85,41 @@ func (p *Progress) AddBar(total int) *Bar {
 // Listen listens for updates and renders the progress bars
 func (p *Progress) Listen() {
 	p.lw.Out = p.Out
-	for {
-		select {
-		case <-p.stopChan:
-			return
-		default:
-			time.Sleep(p.RefreshInterval)
+
+	go func() {
+		for _ = range p.ticker.C {
 			p.mtx.RLock()
-			for _, bar := range p.Bars {
-				fmt.Fprintln(p.lw, bar.String())
-			}
+			p.print()
 			p.lw.Flush()
 			p.mtx.RUnlock()
 		}
+	}()
+}
+
+func (p *Progress) print() {
+	for _, bar := range p.Bars {
+		fmt.Fprintln(p.lw, bar.String())
 	}
 }
 
 // Start starts the rendering the progress of progress bars. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
 func (p *Progress) Start() {
-	if p.stopChan == nil {
-		p.stopChan = make(chan struct{})
+	p.mtx.Lock()
+	if p.ticker == nil {
+		p.ticker = time.NewTicker(RefreshInterval)
 	}
+	p.mtx.Unlock()
+
 	go p.Listen()
 }
 
 // Stop stops listening
 func (p *Progress) Stop() {
-	close(p.stopChan)
-	p.stopChan = nil
+	p.mtx.Lock()
+	p.ticker.Stop()
+	p.print()
+	p.lw.Flush()
+	p.mtx.Unlock()
 }
 
 // Bypass returns a writer which allows non-buffered data to be written to the underlying output
