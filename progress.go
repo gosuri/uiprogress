@@ -35,6 +35,7 @@ type Progress struct {
 
 	lw     *uilive.Writer
 	ticker *time.Ticker
+	tdone  chan bool
 	mtx    *sync.RWMutex
 }
 
@@ -86,14 +87,19 @@ func (p *Progress) AddBar(total int) *Bar {
 func (p *Progress) Listen() {
 	p.lw.Out = p.Out
 
-	go func() {
-		for _ = range p.ticker.C {
+	for {
+		select {
+		case <-p.ticker.C:
 			p.mtx.RLock()
 			p.print()
 			p.lw.Flush()
 			p.mtx.RUnlock()
+		case <-p.tdone:
+			p.ticker.Stop()
+			p.ticker = nil
+			return
 		}
-	}()
+	}
 }
 
 func (p *Progress) print() {
@@ -107,6 +113,7 @@ func (p *Progress) Start() {
 	p.mtx.Lock()
 	if p.ticker == nil {
 		p.ticker = time.NewTicker(RefreshInterval)
+		p.tdone = make(chan bool, 1)
 	}
 	p.mtx.Unlock()
 
@@ -116,8 +123,7 @@ func (p *Progress) Start() {
 // Stop stops listening
 func (p *Progress) Stop() {
 	p.mtx.Lock()
-	p.ticker.Stop()
-	p.ticker = nil
+	close(p.tdone)
 	p.print()
 	p.lw.Flush()
 	p.mtx.Unlock()
