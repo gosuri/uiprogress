@@ -117,6 +117,7 @@ func (p *Progress) Start() {
 func (p *Progress) Stop() {
 	p.mtx.Lock()
 	p.ticker.Stop()
+	p.ticker = nil
 	p.print()
 	p.lw.Flush()
 	p.mtx.Unlock()
