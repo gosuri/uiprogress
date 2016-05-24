@@ -91,8 +91,12 @@ func (p *Progress) Listen() {
 		select {
 		case <-p.ticker.C:
 			p.mtx.RLock()
-			p.print()
-			p.lw.Flush()
+
+			if p.ticker != nil {
+				p.print()
+				p.lw.Flush()
+			}
+
 			p.mtx.RUnlock()
 		case <-p.tdone:
 			p.ticker.Stop()
