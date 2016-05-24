@@ -99,9 +99,11 @@ func (p *Progress) Listen() {
 
 			p.mtx.RUnlock()
 		case <-p.tdone:
-			p.ticker.Stop()
-			p.ticker = nil
-			return
+			if p.ticker != nil {
+				p.ticker.Stop()
+				p.ticker = nil
+				return
+			}
 		}
 	}
 }
