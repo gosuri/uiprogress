@@ -35,9 +35,6 @@ func TestStoppingPrintout(t *testing.T) {
 	progress.Stop()
 	fmt.Fprintf(buffer, "foo")
 
-	// give some time to see if any changes are made after Stop() is called
-	time.Sleep(time.Millisecond * 20)
-
 	var wantSuffix = "[======================================================>-------------]\nfoo"
 
 	if !strings.HasSuffix(buffer.String(), wantSuffix) {
