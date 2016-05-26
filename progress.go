@@ -85,11 +85,12 @@ func (p *Progress) AddBar(total int) *Bar {
 
 // Listen listens for updates and renders the progress bars
 func (p *Progress) Listen() {
+	var tickChan = p.ticker.C
 	p.lw.Out = p.Out
 
 	for {
 		select {
-		case <-p.ticker.C:
+		case <-tickChan:
 			p.mtx.RLock()
 
 			if p.ticker != nil {
