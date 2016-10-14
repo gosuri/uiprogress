@@ -235,3 +235,8 @@ func (b *Bar) TimeElapsed() time.Duration {
 func (b *Bar) TimeElapsedString() string {
 	return strutil.PrettyTime(b.TimeElapsed())
 }
+
+// TimeElapsedStringFormat returns the formatted string represenation of the time elapsed in the specified time unit
+func (b *Bar) TimeElapsedStringFormat(f time.Duration) string {
+	return strutil.PrettyTimeFormat(b.TimeElapsed(), f)
+}

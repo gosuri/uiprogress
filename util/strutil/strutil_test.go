@@ -40,3 +40,19 @@ func TestPrettyTime(t *testing.T) {
 		t.Fatal("want", "---", "got", got)
 	}
 }
+
+func TestPrettyTimeFormat(t *testing.T) {
+	d, _ := time.ParseDuration("300ms")
+	got := PrettyTimeFormat(d, time.Millisecond)
+	if got != "300ms" {
+		t.Fatal("want", "300ms", "got", got)
+	}
+	got = PrettyTimeFormat(d, time.Second)
+	if got != "0s" {
+		t.Fatal("want", "0s", "got", got)
+	}
+	got = PrettyTimeFormat(d, time.Hour)
+	if got != "0s" {
+		t.Fatal("want", "0s", "got", got)
+	}
+}
