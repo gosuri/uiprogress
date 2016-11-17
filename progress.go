@@ -89,6 +89,7 @@ func (p *Progress) Listen() {
 	for {
 		select {
 		case <-p.stopChan:
+			p.stopChan = nil
 			return
 		default:
 			time.Sleep(p.RefreshInterval)
@@ -113,7 +114,11 @@ func (p *Progress) Start() {
 // Stop stops listening
 func (p *Progress) Stop() {
 	close(p.stopChan)
-	p.stopChan = nil
+	for {
+		if p.stopChan == nil {
+			return
+		}
+	}
 }
 
 // Bypass returns a writer which allows non-buffered data to be written to the underlying output
