@@ -94,6 +94,16 @@ func (p *Progress) AddBar(total int) *Bar {
 	return bar
 }
 
+func (p *Progress) renderBars() {
+	p.mtx.RLock()
+	for _, bar := range p.Bars {
+		fmt.Fprintln(p.lw, bar.String())
+	}
+	p.lw.Flush()
+	p.mtx.RUnlock()
+
+}
+
 // Listen listens for updates and renders the progress bars
 func (p *Progress) Listen() {
 	p.lw.Out = p.Out
@@ -103,12 +113,7 @@ func (p *Progress) Listen() {
 			return
 		default:
 			time.Sleep(p.RefreshInterval)
-			p.mtx.RLock()
-			for _, bar := range p.Bars {
-				fmt.Fprintln(p.lw, bar.String())
-			}
-			p.lw.Flush()
-			p.mtx.RUnlock()
+			p.renderBars()
 		}
 	}
 }
@@ -125,6 +130,7 @@ func (p *Progress) Start() {
 func (p *Progress) Stop() {
 	close(p.stopChan)
 	p.stopChan = nil
+	p.renderBars()
 }
 
 // Bypass returns a writer which allows non-buffered data to be written to the underlying output
