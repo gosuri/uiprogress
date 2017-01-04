@@ -17,7 +17,7 @@ var Out = os.Stdout
 var RefreshInterval = time.Millisecond * 10
 
 // defaultProgress is the default progress
-var defaultProgress = New()
+var defaultProgress *Progress
 
 // Progress represents the container that renders progress bars
 type Progress struct {
@@ -54,21 +54,32 @@ func New() *Progress {
 
 // AddBar creates a new progress bar and adds it to the default progress container
 func AddBar(total int) *Bar {
+	if defaultProgress == nil {
+		defaultProgress = New()
+	}
 	return defaultProgress.AddBar(total)
 }
 
 // Start starts the rendering the progress of progress bars using the DefaultProgress. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
 func Start() {
+	if defaultProgress == nil {
+		defaultProgress = New()
+	}
 	defaultProgress.Start()
 }
 
 // Stop stops listening
 func Stop() {
-	defaultProgress.Stop()
+	if defaultProgress != nil {
+		defaultProgress.Stop()
+	}
 }
 
 // Listen listens for updates and renders the progress bars
 func Listen() {
+	if defaultProgress == nil {
+		defaultProgress = New()
+	}
 	defaultProgress.Listen()
 }
 
