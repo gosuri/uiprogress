@@ -11,9 +11,11 @@ import (
 
 func TestStoppingPrintout(t *testing.T) {
 	progress := New()
-	progress.RefreshInterval = time.Millisecond * 10
+	progress.SetRefreshInterval(time.Millisecond * 10)
+
 	var buffer = &bytes.Buffer{}
-	progress.Out = buffer
+	progress.SetOut(buffer)
+
 	bar := progress.AddBar(100)
 	progress.Start()
 
