@@ -76,6 +76,7 @@ func Listen() {
 	defaultProgress.Listen()
 }
 
+// SetOut sets the `io.Writer` to use for output
 func (p *Progress) SetOut(o io.Writer) {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
@@ -84,6 +85,7 @@ func (p *Progress) SetOut(o io.Writer) {
 	p.lw.Out = o
 }
 
+// SetRefreshInterval sets the refresh interval
 func (p *Progress) SetRefreshInterval(interval time.Duration) {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
@@ -99,6 +101,27 @@ func (p *Progress) AddBar(total int) *Bar {
 	bar.Width = p.Width
 	p.Bars = append(p.Bars, bar)
 	return bar
+}
+
+// RemoveBar removes the progress bar from the container and returns true, else it returns false
+func (p *Progress) RemoveBar(bar *Bar) bool {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	if i := p.indexOf(bar); i != -1 {
+		p.Bars = append(p.Bars[:i], p.Bars[i+1:]...)
+		return true
+	}
+	return false
+}
+
+func (p *Progress) indexOf(bar *Bar) int {
+	for i, b := range p.Bars {
+		if bar == b {
+			return i
+		}
+	}
+	return -1
 }
 
 // Listen listens for updates and renders the progress bars
