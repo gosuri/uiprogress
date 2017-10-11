@@ -99,12 +99,14 @@ func (b *Bar) Set(n int) error {
 	return nil
 }
 
-// Incr increments the current value by 1, time elapsed to current time and returns true. It returns false if the cursor has reached or exceeds total value.
-func (b *Bar) Incr() bool {
+// Incr increments the current value, time elapsed to current time and returns true. It returns false if the cursor has reached or exceeds total value. The increment defaults to 1 if no arguments are given.
+func (b *Bar) Incr(increment ...int) bool {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
-
-	n := b.current + 1
+	if len(increment) == 0 {
+		increment = []int{1}
+	}
+	n := b.current + increment[0]
 	if n > b.Total {
 		return false
 	}
