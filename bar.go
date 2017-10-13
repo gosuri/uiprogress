@@ -59,6 +59,9 @@ type Bar struct {
 	// Width is the width of the progress bar
 	Width int
 
+	// Label is the name of the progress bar, shown at the far left when the bar is rendered
+	Label string
+
 	// timeElased is the time elapsed for the progress
 	timeElapsed time.Duration
 	current     int
@@ -74,8 +77,14 @@ type DecoratorFunc func(b *Bar) string
 
 // NewBar returns a new progress bar
 func NewBar(total int) *Bar {
+	return NewBarWithLabel(total, "")
+}
+
+// NewBarWithLabel returns a new labelled progress bar
+func NewBarWithLabel(total int, label string) *Bar {
 	return &Bar{
 		Total:    total,
+		Label:    label,
 		Width:    Width,
 		LeftEnd:  LeftEnd,
 		RightEnd: RightEnd,
@@ -206,6 +215,10 @@ func (b *Bar) Bytes() []byte {
 		args = append(args, ' ')
 		pb = append(args, pb...)
 	}
+
+	// render the label to the left of the prepend functions
+	pb = append([]byte(b.Label), pb...)
+
 	return pb
 }
 

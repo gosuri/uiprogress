@@ -56,6 +56,11 @@ func New() *Progress {
 	}
 }
 
+// AddBarWithLabel creates a new progress bar and adds it to the default progress container
+func AddBarWithLabel(total int, label string) *Bar {
+	return defaultProgress.AddBarWithLabel(total, label)
+}
+
 // AddBar creates a new progress bar and adds it to the default progress container
 func AddBar(total int) *Bar {
 	return defaultProgress.AddBar(total)
@@ -88,6 +93,17 @@ func (p *Progress) SetRefreshInterval(interval time.Duration) {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 	p.RefreshInterval = interval
+}
+
+// AddBarWithLabel creates a new progress bar and adds to the container
+func (p *Progress) AddBarWithLabel(total int, label string) *Bar {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	bar := NewBarWithLabel(total, label)
+	bar.Width = p.Width
+	p.Bars = append(p.Bars, bar)
+	return bar
 }
 
 // AddBar creates a new progress bar and adds to the container

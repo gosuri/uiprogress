@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+func TestBarLabel(t *testing.T) {
+	b := NewBarWithLabel(100, "app1")
+	if !strings.HasPrefix(b.String(), "app1") {
+		t.Fatal("want", "app1", "in", b.String())
+	}
+}
+
 func TestBarPrepend(t *testing.T) {
 	b := NewBar(100)
 	b.PrependCompleted()
