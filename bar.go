@@ -217,9 +217,11 @@ func (b *Bar) Bytes() []byte {
 	}
 
 	// render the label to the left of the prepend functions
-	args := []byte(b.Label)
-	args = append(args, ' ')
-	pb = append(args, pb...)
+	if b.Label != "" {
+		args := []byte(b.Label)
+		args = append(args, ' ')
+		pb = append(args, pb...)
+	}
 
 	return pb
 }
