@@ -74,6 +74,9 @@ type DecoratorFunc func(b *Bar) string
 
 // NewBar returns a new progress bar
 func NewBar(total int) *Bar {
+	if total <= 0 {
+		total = 0
+	}
 	return &Bar{
 		Total:    total,
 		Width:    Width,
@@ -216,6 +219,9 @@ func (b *Bar) String() string {
 
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
+	if b.Total <= 0 {
+		return 100.00
+	}
 	return (float64(b.Current()) / float64(b.Total)) * 100.00
 }
 
