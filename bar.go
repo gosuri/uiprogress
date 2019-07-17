@@ -87,7 +87,7 @@ func NewBar(total int) *Bar {
 	}
 }
 
-// Set the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is atomic operation and concurancy safe.
+// Set the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is atomic operation and concurrency safe.
 func (b *Bar) Set(n int) error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
