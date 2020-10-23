@@ -69,6 +69,7 @@ func Start() {
 // Stop stops listening
 func Stop() {
 	defaultProgress.Stop()
+	defaultProgress = New()
 }
 
 // Listen listens for updates and renders the progress bars
