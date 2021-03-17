@@ -51,7 +51,7 @@ func New() *Progress {
 		RefreshInterval: RefreshInterval,
 
 		tdone: make(chan bool),
-		lw:    uilive.New(),
+		lw:    lw,
 		mtx:   &sync.RWMutex{},
 	}
 }
