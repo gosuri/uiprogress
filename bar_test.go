@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+func TestBarZero(t *testing.T) {
+	b := NewBar(0)
+	b.PrependCompleted()
+	if !strings.Contains(b.String(), "100") {
+		t.Fatal("want", "100%", "in", b.String())
+	}
+}
+
 func TestBarPrepend(t *testing.T) {
 	b := NewBar(100)
 	b.PrependCompleted()
