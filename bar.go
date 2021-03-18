@@ -95,6 +95,10 @@ func (b *Bar) Set(n int) error {
 	if n > b.Total {
 		return ErrMaxCurrentReached
 	}
+	if b.TimeStarted.IsZero() {
+		b.TimeStarted = time.Now()
+	}
+	b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
 	return nil
 }
@@ -108,8 +112,7 @@ func (b *Bar) Incr() bool {
 	if n > b.Total {
 		return false
 	}
-	var t time.Time
-	if b.TimeStarted == t {
+	if b.TimeStarted.IsZero() {
 		b.TimeStarted = time.Now()
 	}
 	b.timeElapsed = time.Since(b.TimeStarted)
