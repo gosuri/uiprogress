@@ -59,3 +59,11 @@ func PrettyTime(t time.Duration) string {
 	}
 	return (t - (t % time.Second)).String()
 }
+
+// PrettyTimeFormat returns the string representation of the duration. It rounds the time duration to the specified unit and returns a "---" when duration is 0
+func PrettyTimeFormat(t time.Duration, f time.Duration) string {
+	if t == 0 {
+		return "---"
+	}
+	return (t - (t % f)).String()
+}
