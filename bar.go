@@ -95,6 +95,7 @@ func (b *Bar) Set(n int) error {
 	if n > b.Total {
 		return ErrMaxCurrentReached
 	}
+	b.updateElapsedTime()
 	b.current = n
 	return nil
 }
@@ -108,11 +109,7 @@ func (b *Bar) Incr() bool {
 	if n > b.Total {
 		return false
 	}
-	var t time.Time
-	if b.TimeStarted == t {
-		b.TimeStarted = time.Now()
-	}
-	b.timeElapsed = time.Since(b.TimeStarted)
+	b.updateElapsedTime()
 	b.current = n
 	return true
 }
@@ -234,4 +231,13 @@ func (b *Bar) TimeElapsed() time.Duration {
 // TimeElapsedString returns the formatted string represenation of the time elapsed
 func (b *Bar) TimeElapsedString() string {
 	return strutil.PrettyTime(b.TimeElapsed())
+}
+
+// updateElapsedTime updates the TimeStarted value, when it is the 0 value, to the current time. Then it updates the timeElapsed value to the correct duration.
+func (b *Bar) updateElapsedTime() {
+	var t time.Time
+	if b.TimeStarted == t {
+		b.TimeStarted = time.Now()
+	}
+	b.timeElapsed = time.Since(b.TimeStarted)
 }
