@@ -131,6 +131,30 @@ wg.Wait()
 uiprogress.Stop()
 ```
 
+### `Set` counter and tracking progress of the external process
+
+You can use progress bar to track the progress of any external process, for example
+the process of execution of github actions workflow run. To get an accurate
+elapsed time use `.WithStartedAt(time)` to initialize starting time for the progress
+bar.
+
+```
+job, _ := FetchExternalJob() // request for external resource
+totalStepsCount := len(job.Steps)
+
+uiprogress.Start()
+bar := uiprogress.AddBar(totalStepsCount).WithStartedAt(job.StartedAt).AppendCompleted().PrependElapsed()
+for !job.IsCompleted {
+    // poll resource status
+    job, _ = FetchExternalJob()
+    // update progress
+    bar.Set(job.GetCurrentStepNumber())
+    // wait a second
+    time.Sleep(time.Second)
+}
+uiprogress.Stop()
+```
+
 ## Installation
 
 ```sh
