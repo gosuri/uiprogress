@@ -95,6 +95,8 @@ func (b *Bar) Set(n int) error {
 	if n > b.Total {
 		return ErrMaxCurrentReached
 	}
+
+	b.updateElapsed()
 	b.current = n
 	return nil
 }
@@ -108,13 +110,17 @@ func (b *Bar) Incr() bool {
 	if n > b.Total {
 		return false
 	}
+	b.updateElapsed()
+	b.current = n
+	return true
+}
+
+func (b *Bar) updateElapsed() {
 	var t time.Time
 	if b.TimeStarted == t {
 		b.TimeStarted = time.Now()
 	}
 	b.timeElapsed = time.Since(b.TimeStarted)
-	b.current = n
-	return true
 }
 
 // Current returns the current progress of the bar
@@ -169,6 +175,13 @@ func (b *Bar) PrependElapsed() *Bar {
 	b.PrependFunc(func(b *Bar) string {
 		return strutil.PadLeft(b.TimeElapsedString(), 5, ' ')
 	})
+	return b
+}
+
+// WithStartedAt initializes time of start for calculation of elapsed time
+func (b *Bar) WithStartedAt(t time.Time) *Bar {
+	b.TimeStarted = t
+	b.updateElapsed()
 	return b
 }
 
