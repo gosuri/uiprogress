@@ -111,16 +111,16 @@ func (p *Progress) Listen() {
 
 		select {
 		case <-time.After(interval):
-			p.print()
+			p.Print()
 		case <-p.tdone:
-			p.print()
+			p.Print()
 			close(p.tdone)
 			return
 		}
 	}
 }
 
-func (p *Progress) print() {
+func (p *Progress) Print() {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 	for _, bar := range p.Bars {
