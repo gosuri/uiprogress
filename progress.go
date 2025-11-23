@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gosuri/uilive"
+	"golang.org/x/term"
 )
 
 // Out is the default writer to render progress bars to
@@ -18,6 +19,15 @@ var RefreshInterval = time.Millisecond * 10
 
 // defaultProgress is the default progress
 var defaultProgress = New()
+
+// getTerminalWidth returns the width of the terminal window.
+// If detection fails, it returns the default Width value.
+func getTerminalWidth() int {
+	if width, _, err := term.GetSize(int(Out.Fd())); err == nil && width > 0 {
+		return width
+	}
+	return Width
+}
 
 // Progress represents the container that renders progress bars
 type Progress struct {
@@ -123,7 +133,43 @@ func (p *Progress) Listen() {
 func (p *Progress) print() {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
+
+	// Auto-detect terminal width and adjust bar widths
+	termWidth := getTerminalWidth()
+
 	for _, bar := range p.Bars {
+		// Calculate available width for the progress bar itself
+		// Account for decorators by checking the current string length
+		bar.mtx.RLock()
+		prependFuncs := make([]DecoratorFunc, len(bar.prependFuncs))
+		copy(prependFuncs, bar.prependFuncs)
+		appendFuncs := make([]DecoratorFunc, len(bar.appendFuncs))
+		copy(appendFuncs, bar.appendFuncs)
+		bar.mtx.RUnlock()
+
+		decoratorsWidth := 0
+
+		// Calculate prepend decorators width
+		for _, f := range prependFuncs {
+			decoratorsWidth += len(f(bar)) + 1 // +1 for space
+		}
+
+		// Calculate append decorators width
+		for _, f := range appendFuncs {
+			decoratorsWidth += len(f(bar)) + 1 // +1 for space
+		}
+
+		// Set bar width to terminal width minus decorators
+		// Ensure minimum width of 10 characters for the bar
+		barWidth := termWidth - decoratorsWidth
+		if barWidth < 10 {
+			barWidth = 10
+		}
+
+		bar.mtx.Lock()
+		bar.Width = barWidth
+		bar.mtx.Unlock()
+
 		fmt.Fprintln(p.lw, bar.String())
 	}
 	p.lw.Flush()
