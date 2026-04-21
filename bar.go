@@ -216,6 +216,15 @@ func (b *Bar) String() string {
 
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
+	// Guard against an AddBar(0) / Total=0 bar (#47). Dividing by
+	// zero here produces +Inf or NaN, which breaks every downstream
+	// caller - Bytes() would scale Width by +Inf, fill the buffer
+	// with a past-the-int overflow amount of bytes and crash. Treat
+	// a zero-total bar as 100% complete because there is nothing to
+	// track, matching how most progress libraries render a 0/0 bar.
+	if b.Total == 0 {
+		return 100.0
+	}
 	return (float64(b.Current()) / float64(b.Total)) * 100.00
 }
 
